@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>صراحات - اعترافات مجهولة</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tahoma', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .confession-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-right: 4px solid #667eea;
+        }
+
+        .confession-text {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .confession-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            padding: 5px 15px;
+            font-size: 12px;
+            margin-top: 10px;
+            display: inline-block;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💭 صراحات</h1>
+            <p>اعترف بكل ما بداخلك .. بشكل مجهول وآمن</p>
+        </div>
+
+        <div class="card">
+            <h2>✍️ اكتب صراحتك</h2>
+            <textarea id="confessionInput" placeholder="اكتب هنا ما تريد قوله... (كل الصراحات تظهر بشكل مجهول)"></textarea>
+            <button onclick="addConfession()">أرسل الصراحة</button>
+        </div>
+
+        <div class="card">
+            <h2>📖 الصراحات</h2>
+            <div id="confessionsList">
+                <div class="empty-message">لا توجد صراحات بعد... كن أول من يكتب!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // تحميل الصراحات عند فتح الصفحة
+        loadConfessions();
+
+        function addConfession() {
+            const input = document.getElementById('confessionInput');
+            const text = input.value.trim();
+            
+            if (text === '') {
+                alert('الرجاء كتابة صراحة أولاً');
+                return;
+            }
+            
+            // إنشاء كائن الصراحة
+            const confession = {
+                id: Date.now(),
+                text: text,
+                date: new Date().toLocaleString('ar-EG')
+            };
+            
+            // جلب الصراحات الحالية من localStorage
+            let confessions = JSON.parse(localStorage.getItem('confessions') || '[]');
+            
+            // إضافة الصراحة الجديدة
+            confessions.unshift(confession);
+            
+            // حفظ في localStorage
+            localStorage.setItem('confessions', JSON.stringify(confessions));
+            
+            // تفريغ الحقل
+            input.value = '';
+            
+            // تحديث العرض
+            loadConfessions();
+            
+            // تأثير بسيط
+            alert('تم إرسال صراحتك بنجاح! 🤫');
+        }
+        
+        function deleteConfession(id) {
+            if (confirm('هل أنت متأكد من حذف هذه الصراحة؟')) {
+                let confessions = JSON.parse(localStorage.getItem('confessions') || '[]');
+                confessions = confessions.filter(c => c.id != id);
+                localStorage.setItem('confessions', JSON.stringify(confessions));
+                loadConfessions();
+            }
+        }
+        
+        function loadConfessions() {
+            const confessions = JSON.parse(localStorage.getItem('confessions') || '[]');
+            const container = document.getElementById('confessionsList');
+            
+            if (confessions.length === 0) {
+                container.innerHTML = '<div class="empty-message">لا توجد صراحات بعد... كن أول من يكتب!</div>';
+                return;
+            }
+            
+            let html = '';
+            for (let confession of confessions) {
+                html += `
+                    <div class="confession-item">
+                        <div class="confession-text">${escapeHtml(confession.text)}</div>
+                        <div class="confession-date">📅 ${confession.date}</div>
+                        <button class="delete-btn" onclick="deleteConfession(${confession.id})">🗑️ حذف</button>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+        
+        // حماية من حقن HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
